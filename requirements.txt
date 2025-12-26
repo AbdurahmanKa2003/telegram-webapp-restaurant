@@ -5,7 +5,7 @@ whitenoise==6.8.2
 
 # Асинхронность и HTTP
 aiohttp==3.10.10
-httpx==0.25.2
+httpx
 
 # Telegram API
 python-telegram-bot==21.9
