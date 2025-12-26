@@ -8,7 +8,7 @@ aiohttp==3.10.10
 httpx==0.25.2
 
 # Telegram API
-pyTelegramBotAPI==4.22.1
+python-telegram-bot==21.9
 
 # База данных
 psycopg2-binary==2.9.11
