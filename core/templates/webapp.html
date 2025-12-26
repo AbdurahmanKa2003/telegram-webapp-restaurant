@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Food Menu</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        button { padding: 12px; margin: 6px 0; width: 100%; }
+    </style>
+</head>
+<body>
+
+<h2>🍔 Menu</h2>
+
+<button onclick="add('Burger')">🍔 Burger</button>
+<button onclick="add('Fries')">🍟 Fries</button>
+<button onclick="add('Cola')">🥤 Cola</button>
+
+<hr>
+<button onclick="checkout()">✅ Checkout</button>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+let cart = [];
+
+function add(item) {
+    cart.push(item);
+    tg.showAlert(item + " added to cart");
+}
+
+function checkout() {
+    tg.sendData(JSON.stringify(cart));
+    tg.close();
+}
+</script>
+
+</body>
+</html>

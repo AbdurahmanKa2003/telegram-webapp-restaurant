@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Nogay Food</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="/static/webapp/app.css"/>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">🍽️</div>
+        <div>
+          <div class="title">Nogay Food</div>
+          <div class="subtitle" id="userLine">Loading…</div>
+        </div>
+      </div>
+      <button class="pill" id="btnOrders">📦 Orders</button>
+    </header>
+
+    <main class="content">
+      <section class="card">
+        <div class="cardTitle">Menu</div>
+        <div id="menuGrid" class="grid"></div>
+      </section>
+
+      <section class="card">
+        <div class="cardTitle">Cart</div>
+        <div id="cartList" class="list"></div>
+
+        <div class="row">
+          <div class="muted">Total:</div>
+          <div class="total" id="totalPrice">0</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="cardTitle">Delivery method</div>
+        <div class="seg">
+          <button class="segBtn active" data-mode="pickup">🏁 Pickup</button>
+          <button class="segBtn" data-mode="delivery">🚚 Delivery</button>
+        </div>
+
+        <div id="deliveryForm" class="form hidden">
+          <input id="addr" class="inp" placeholder="Address"/>
+          <input id="phone" class="inp" placeholder="Phone"/>
+        </div>
+
+        <button class="primary" id="btnCheckout">✅ Place order</button>
+        <div class="hint" id="hint"></div>
+      </section>
+    </main>
+
+    <div class="modal hidden" id="ordersModal">
+      <div class="modalBox">
+        <div class="modalTop">
+          <div class="cardTitle">Your orders</div>
+          <button class="pill" id="btnCloseOrders">✖</button>
+        </div>
+        <div id="ordersList" class="list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/webapp/app.js"></script>
+</body>
+</html>
