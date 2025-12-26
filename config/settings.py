@@ -1,8 +1,7 @@
-from pathlib import Path
+is it all code for settings.py from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-DEBUG = True
 # =========================
 # BASE DIR + ENV
 # =========================
@@ -65,7 +64,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],  # можно использовать позже
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -77,7 +76,7 @@ TEMPLATES = [
         },
     },
 ]
-TEMPLATES[0]["DIRS"] = [BASE_DIR / "templates"]
+
 # =========================
 # DATABASE (PostgreSQL)
 # =========================
@@ -111,26 +110,25 @@ USE_I18N = True
 USE_TZ = True
 
 # =========================
-# STATIC FILES
-# =========================
-# STATIC FILES
+# STATIC & MEDIA FILES
 # =========================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# ВАЖНО: чтобы Django видел /static из папки static/ в корне проекта
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
 # =========================
 # DEFAULT PK
 # =========================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =========================
-# Telegram WebApp / ngrok
+# TELEGRAM WEBAPP / HTTPS
 # =========================
 X_FRAME_OPTIONS = "ALLOWALL"
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
@@ -138,9 +136,8 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 NGROK_HOST = os.getenv("NGROK_HOST", "").strip()
 
-if NGROK_HOST and NGROK_HOST not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append(NGROK_HOST)
-
 CSRF_TRUSTED_ORIGINS = []
 if NGROK_HOST:
     CSRF_TRUSTED_ORIGINS.append(f"https://{NGROK_HOST}")
+    if NGROK_HOST not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(NGROK_HOST)
