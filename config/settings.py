@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-import dj_database_url  # Не забудьте добавить в requirements.txt
+import dj_database_url
 
 # =========================
 # ПУТИ И ОКРУЖЕНИЕ
@@ -13,22 +13,20 @@ load_dotenv(BASE_DIR / ".env")
 # БЕЗОПАСНОСТЬ
 # =========================
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-dev-key-123")
-
-# DEBUG должен быть False в продакшене
 DEBUG = os.getenv("DEBUG", "0") == "1"
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "telegram-webapp-restaurant.onrender.com", # Ваш домен на Render
+    "telegram-webapp-restaurant.onrender.com",
 ]
 
 # =========================
 # ПРИЛОЖЕНИЯ
 # =========================
 INSTALLED_APPS = [
-    # Хранилище картинок (добавить после pip install django-cloudinary-storage)
-    # 'cloudinary_storage', 
+    # Облачное хранилище (Должно быть ПЕРЕД staticfiles)
+    'cloudinary_storage',
     
     "django.contrib.admin",
     "django.contrib.auth",
@@ -37,7 +35,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     
-    # 'cloudinary', # Облако для медиа
+    'cloudinary', # Библиотека для связи с Cloudinary
 
     # Ваши приложения
     "core",
@@ -52,7 +50,7 @@ INSTALLED_APPS = [
 # =========================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # Для работы статики на Render
+    "whitenoise.middleware.WhiteNoiseMiddleware", # Обслуживание статики
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -97,19 +95,18 @@ DATABASES = {
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# WhiteNoise настройки
+# Настройка WhiteNoise для статики (CSS, JS)
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+# Настройка Cloudinary для Медиа (Изображения товаров)
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# --- Настройки Cloudinary (Раскомментируйте, когда получите ключи) ---
-# CLOUDINARY_STORAGE = {
-#     'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
-#     'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-#     'API_SECRET': os.getenv('CLOUDINARY_API_SECRET')
-# }
-# DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET')
+}
 
 # =========================
 # БЕЗОПАСНОСТЬ И WEBAPP
