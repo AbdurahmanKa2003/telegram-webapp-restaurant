@@ -1,37 +1,45 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url  # Не забудьте добавить в requirements.txt
 
 # =========================
-# BASE DIR + ENV
+# ПУТИ И ОКРУЖЕНИЕ
 # =========================
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 # =========================
-# SECURITY
+# БЕЗОПАСНОСТЬ
 # =========================
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-me")
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-dev-key-123")
+
+# DEBUG должен быть False в продакшене
 DEBUG = os.getenv("DEBUG", "0") == "1"
 
-# Добавляем домен Render в разрешенные хосты
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "telegram-webapp-restaurant.onrender.com", # Ваш домен
+    "telegram-webapp-restaurant.onrender.com", # Ваш домен на Render
 ]
 
 # =========================
-# APPLICATIONS
+# ПРИЛОЖЕНИЯ
 # =========================
 INSTALLED_APPS = [
+    # Хранилище картинок (добавить после pip install django-cloudinary-storage)
+    # 'cloudinary_storage', 
+    
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "django.contrib.staticfiles", # Обязательно должен быть здесь
+    "django.contrib.staticfiles",
     
+    # 'cloudinary', # Облако для медиа
+
+    # Ваши приложения
     "core",
     "catalog",
     "orders",
@@ -40,11 +48,11 @@ INSTALLED_APPS = [
 ]
 
 # =========================
-# MIDDLEWARE (Добавлен WhiteNoise)
+# MIDDLEWARE
 # =========================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # ИМЕННО ЗДЕСЬ ДЛЯ CSS/JS
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # Для работы статики на Render
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -54,11 +62,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "config.urls"
-WSGI_APPLICATION = "config.wsgi.application"
 
-# =========================
-# TEMPLATES
-# =========================
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -75,44 +79,44 @@ TEMPLATES = [
     },
 ]
 
+WSGI_APPLICATION = "config.wsgi.application"
+
 # =========================
-# DATABASE (PostgreSQL)
+# БАЗА ДАННЫХ (PostgreSQL)
 # =========================
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME", "telegram_webapp"),
-        "USER": os.getenv("DB_USER", "telegram_webapp_user"),
-        "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST"),
-        "PORT": os.getenv("DB_PORT", "5432"),
-    }
+    "default": dj_database_url.config(
+        default=os.getenv("DATABASE_URL"),
+        conn_max_age=600
+    )
 }
 
 # =========================
-# STATIC FILES (Настройка WhiteNoise)
+# СТАТИКА И МЕДИА
 # =========================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-
-# Хранилище со сжатием и кэшированием для быстрой загрузки
+# WhiteNoise настройки
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# --- Настройки Cloudinary (Раскомментируйте, когда получите ключи) ---
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+#     'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+#     'API_SECRET': os.getenv('CLOUDINARY_API_SECRET')
+# }
+# DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
 # =========================
-# Telegram WebApp Security
+# БЕЗОПАСНОСТЬ И WEBAPP
 # =========================
 X_FRAME_OPTIONS = "ALLOWALL"
-SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-# Доверяем домену для POST-запросов (важно для WebApp)
 CSRF_TRUSTED_ORIGINS = [
     "https://telegram-webapp-restaurant.onrender.com"
 ]
