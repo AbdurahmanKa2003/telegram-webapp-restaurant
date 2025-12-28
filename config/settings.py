@@ -1,5 +1,5 @@
-from pathlib import Path
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
 # =========================
@@ -14,24 +14,24 @@ load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-me")
 DEBUG = os.getenv("DEBUG", "0") == "1"
 
-ALLOWED_HOSTS = os.getenv(
-    "ALLOWED_HOSTS",
-    "127.0.0.1,localhost"
-).split(",")
+# Добавляем домен Render в разрешенные хосты
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "telegram-webapp-restaurant.onrender.com", # Ваш домен
+]
 
 # =========================
 # APPLICATIONS
 # =========================
 INSTALLED_APPS = [
-    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "django.contrib.staticfiles",
-
-    # Local apps
+    "django.contrib.staticfiles", # Обязательно должен быть здесь
+    
     "core",
     "catalog",
     "orders",
@@ -40,10 +40,11 @@ INSTALLED_APPS = [
 ]
 
 # =========================
-# MIDDLEWARE
+# MIDDLEWARE (Добавлен WhiteNoise)
 # =========================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # ИМЕННО ЗДЕСЬ ДЛЯ CSS/JS
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -52,9 +53,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# =========================
-# URLS / WSGI
-# =========================
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
 
@@ -83,34 +81,16 @@ TEMPLATES = [
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME", "nogay_food"),
-        "USER": os.getenv("DB_USER", "postgres"),
-        "PASSWORD": os.getenv("DB_PASSWORD", "postgres"),
-        "HOST": os.getenv("DB_HOST", "127.0.0.1"),
+        "NAME": os.getenv("DB_NAME", "telegram_webapp"),
+        "USER": os.getenv("DB_USER", "telegram_webapp_user"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
         "PORT": os.getenv("DB_PORT", "5432"),
     }
 }
 
 # =========================
-# PASSWORD VALIDATION
-# =========================
-AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
-]
-
-# =========================
-# INTERNATIONALIZATION
-# =========================
-LANGUAGE_CODE = "en-us"
-TIME_ZONE = "UTC"
-USE_I18N = True
-USE_TZ = True
-
-# =========================
-# STATIC & MEDIA FILES
+# STATIC FILES (Настройка WhiteNoise)
 # =========================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -119,25 +99,22 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+# Хранилище со сжатием и кэшированием для быстрой загрузки
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # =========================
-# DEFAULT PK
-# =========================
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# =========================
-# TELEGRAM WEBAPP / HTTPS
+# Telegram WebApp Security
 # =========================
 X_FRAME_OPTIONS = "ALLOWALL"
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-NGROK_HOST = os.getenv("NGROK_HOST", "").strip()
+# Доверяем домену для POST-запросов (важно для WebApp)
+CSRF_TRUSTED_ORIGINS = [
+    "https://telegram-webapp-restaurant.onrender.com"
+]
 
-CSRF_TRUSTED_ORIGINS = []
-if NGROK_HOST:
-    CSRF_TRUSTED_ORIGINS.append(f"https://{NGROK_HOST}")
-    if NGROK_HOST not in ALLOWED_HOSTS:
-        ALLOWED_HOSTS.append(NGROK_HOST)
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
