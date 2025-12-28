@@ -120,4 +120,4 @@ class Command(BaseCommand):
         app.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, on_webapp_data))
 
         self.stdout.write("🤖 Bot started. Press Ctrl+C to stop.")
-        app.run_polling()
+        app.run_polling(drop_pending_updates=True)
