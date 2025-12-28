@@ -51,3 +51,5 @@ certifi==2024.6.2
 typing_extensions==4.12.2
 greenlet>=3.1.1
 six==1.16.0
+django-cloudinary-storage==0.3.0
+cloudinary==1.41.0
