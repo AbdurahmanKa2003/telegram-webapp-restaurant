@@ -19,24 +19,23 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
     "telegram-webapp-restaurant.onrender.com",
-    ".onrender.com",  # добавлено для всех поддоменов Render
+    ".onrender.com",
 ]
 
 # =========================
-# ПРИЛОЖЕНИЯ (ИСПРАВЛЕННЫЙ ПОРЯДОК!)
+# ПРИЛОЖЕНИЯ
 # =========================
 INSTALLED_APPS = [
-    # Django core apps
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "django.contrib.staticfiles",  # ДОЛЖНО БЫТЬ ПЕРЕД cloudinary!
+    "django.contrib.staticfiles",  # ДОЛЖНО БЫТЬ ПЕРЕД cloudinary
     
-    # Third-party apps
-    'cloudinary',  # сначала библиотека
-    'cloudinary_storage',  # потом storage
+    # Cloudinary - ТОЛЬКО для медиа
+    'cloudinary',
+    'cloudinary_storage',
     
     # Ваши приложения
     "core",
@@ -51,7 +50,7 @@ INSTALLED_APPS = [
 # =========================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # ДОЛЖНО БЫТЬ ПОСЛЕ SecurityMiddleware
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -73,6 +72,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.static",  # ДОБАВИТЬ!
             ],
         },
     },
@@ -81,7 +81,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # =========================
-# БАЗА ДАННЫХ (PostgreSQL)
+# БАЗА ДАННЫХ
 # =========================
 DATABASES = {
     "default": dj_database_url.config(
@@ -92,69 +92,73 @@ DATABASES = {
 }
 
 # =========================
-# СТАТИКА (CSS, JS, fonts) - WhiteNoise
+# СТАТИКА (CSS, JS) - WhiteNoise
 # =========================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Директории со статическими файлами (исходные файлы)
+# ГДЕ ИСКАТЬ СТАТИЧЕСКИЕ ФАЙЛЫ (важно!)
 STATICFILES_DIRS = [
-    BASE_DIR / "static",  # если есть глобальная папка static
+    BASE_DIR / "static",  # глобальная папка static
+    BASE_DIR / "static/webapp",  # ваши CSS/JS файлы здесь
 ]
 
-# WhiteNoise настройки для Render
+# WhiteNoise настройки
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# Оптимизация WhiteNoise
+# Дополнительные настройки WhiteNoise
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_MANIFEST_STRICT = False
-WHITENOISE_AUTOREFRESH = DEBUG  # автообновление только в режиме отладки
-
-# Кэширование статики
-WHITENOISE_MAX_AGE = 31536000 if not DEBUG else 0  # 1 год в продакшене
+WHITENOISE_ROOT = BASE_DIR / "staticfiles"
 
 # =========================
 # МЕДИА (изображения) - Cloudinary
 # =========================
 MEDIA_URL = "/media/"
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# Настройки Cloudinary
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
-    # Важно для предотвращения конфликтов
-    'resource_type': 'auto',
-    'folder': 'media/',
-}
+# Используем Cloudinary ТОЛЬКО если есть настройки
+if all([
+    os.getenv('CLOUDINARY_CLOUD_NAME'),
+    os.getenv('CLOUDINARY_API_KEY'),
+    os.getenv('CLOUDINARY_API_SECRET')
+]):
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+        'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+        'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+        'folder': 'media/',
+    }
+else:
+    # Локальное хранение медиа, если нет Cloudinary
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 # =========================
 # БЕЗОПАСНОСТЬ И WEBAPP
 # =========================
-# Для Telegram Web App
 X_FRAME_OPTIONS = "ALLOWALL"
-
-# Для работы через прокси Render
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_SSL_REDIRECT = not DEBUG
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
+
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 CSRF_TRUSTED_ORIGINS = [
     "https://telegram-webapp-restaurant.onrender.com",
     "https://*.onrender.com",
 ]
 
-# Для CORS (если нужно API)
-CORS_ALLOWED_ORIGINS = [
-    "https://telegram-webapp-restaurant.onrender.com",
-]
+# =========================
+# ТЕЛЕГРАМ БОТ (исправление конфликта)
+# =========================
+# Убедитесь, что бот запускается только один раз
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 # =========================
-# ОСТАЛЬНЫЕ НАСТРОЙКИ
+# ДРУГИЕ НАСТРОЙКИ
 # =========================
-# Internationalization
 LANGUAGE_CODE = "ru-ru"
 TIME_ZONE = "Europe/Moscow"
 USE_I18N = True
@@ -163,28 +167,8 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =========================
-# НАСТРОЙКИ ДЛЯ РЕНДЕРА
+# РЕНДЕР СЕРВИС
 # =========================
-# Автоматическое определение хостов на Render
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-
-# Оптимизация для Render
-if not DEBUG:
-    # Логирование на Render
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'handlers': {
-            'console': {
-                'class': 'logging.StreamHandler',
-            },
-        },
-        'loggers': {
-            'django': {
-                'handlers': ['console'],
-                'level': 'INFO',
-            },
-        },
-    }
